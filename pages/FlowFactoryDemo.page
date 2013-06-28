@@ -1,0 +1,98 @@
+<apex:page controller="FlowFactoryDemoController">
+<apex:sectionHeader title="FlowFactory" subtitle="Demo"/>
+
+<style type="text/css">
+.flowStepWidth {
+	width: 150px;
+}
+.link {
+	text-decoration: none;
+}
+.column {
+	border: 0px !important;
+}
+</style>
+
+	<apex:form >
+
+		<!-- ADD SAMPLE DATA -->
+		<apex:outputPanel rendered="{!hasData != true}">
+			<apex:pageBlock >
+				<apex:pageBlockSection >
+					<apex:commandButton value="Load Sample Data" action="{!loadSampleData}"/>
+				</apex:pageBlockSection>
+			</apex:pageBlock>
+		</apex:outputPanel>
+
+		<!-- MAIN PAGE -->
+		<apex:outputPanel rendered="{!hasData == true}">
+			<apex:pageBlock id="thePageBlock" title="Flow">
+				<apex:pageBlockSection id="topSection" columns="1">
+	
+					<!-- FLOW LIST -->
+					<apex:pageBlockSectionItem >
+						<!-- <apex:outputLabel value="Flow" for="flowList"/> -->
+						<apex:outputPanel >
+							<apex:selectList id="flowList" size="1" value="{!selectedFlow}" style="width:150px;"> 
+								<apex:selectOptions value="{!flowList}"/>
+								<apex:actionSupport event="onchange" action="{!populateStepTree}" rerender="stepTree, executedSteps"/> 
+							</apex:selectList>
+							&nbsp;
+							<apex:selectList id="pathList" size="1" value="{!selectedPath}"> 
+								<apex:selectOptions value="{!pathList}"/>
+							</apex:selectList>
+							&nbsp;
+							<!-- <apex:commandButton value="View" action="/{!selectedFlow}"/> -->
+							<apex:commandButton value="Execute" action="{!executeFlow}" rerender="thePageBlock, results"/>
+						</apex:outputPanel>
+					</apex:pageBlockSectionItem>
+					
+					<!-- FLOW STEP LIST -->
+					<apex:pageBlockSectionItem >
+						<!-- <apex:outputLabel value="Steps" for="stepTree"/> -->
+						<apex:outputPanel >
+							<apex:pageBlockTable id="stepTree" value="{!stepTree}" var="step">
+								<apex:column headerValue="Step" styleClass="flowStepWidth" style="vertical-align: top;">
+									<apex:outputLink value="/{!step.step.Id}" styleClass="link">{!step.step.Name}</apex:outputLink>
+								</apex:column>
+								<apex:column >
+									<apex:facet name="header">
+										<apex:outputText value="&nbsp;Branch&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Next Step" escape="false"/>
+									</apex:facet>
+									<apex:dataTable value="{!step.branchList}" var="branch">
+										<apex:column styleClass="column">
+											<apex:outputLink value="/{!branch.Id}" styleClass="link">{!branch.Name}</apex:outputLink>
+										</apex:column>
+										<apex:column styleClass="column">
+											&nbsp;&nbsp;&nbsp;
+										</apex:column>
+										<apex:column styleClass="column">
+											<apex:outputLink value="/{!branch.Next_Step__c}" styleClass="link">{!branch.Next_Step__r.Name}</apex:outputLink>
+										</apex:column>
+									</apex:dataTable>
+								</apex:column>
+							</apex:pageBlockTable>
+						</apex:outputPanel>
+					</apex:pageBlockSectionItem>
+	
+				</apex:pageBlockSection>
+			</apex:pageBlock>
+			
+			<!-- EXECUTED FLOW STEPS -->
+			<apex:pageBlock id="results" title="Execution Results">
+				<apex:pageBlockSection columns="1">
+					<apex:pageBlockSectionItem >
+						<apex:pageBlockTable id="executedSteps" value="{!executedFlowSteps}" var="item">
+							<apex:column headerValue="#" style="width:20px;">
+								<apex:outputText value="{!item.stepNumber}"/>
+							</apex:column>
+							<apex:column headerValue="Flow Step">
+								<apex:outputText value="{!item.step}"/>
+							</apex:column>
+						</apex:pageBlockTable>
+					</apex:pageBlockSectionItem>
+				</apex:pageBlockSection>
+			</apex:pageBlock>
+		</apex:outputPanel>
+	</apex:form>
+</apex:page>
